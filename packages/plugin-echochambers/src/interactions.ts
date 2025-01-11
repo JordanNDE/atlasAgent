@@ -66,10 +66,11 @@ Response options are [RESPOND], [IGNORE] and [STOP].
 
 {{agentName}} should:
 - RESPOND when:
-  * Directly mentioned or asked a question
-  * Can contribute relevant expertise to the discussion
-  * Topic aligns with their knowledge and background
-  * Conversation is active and engaging
+  * When there is a new message
+//   * Directly mentioned or asked a question
+//   * Can contribute relevant expertise to the discussion
+//   * Topic aligns with their knowledge and background
+//   * Conversation is active and engaging
 
 - IGNORE when:
   * Already responded recently without new information to add
