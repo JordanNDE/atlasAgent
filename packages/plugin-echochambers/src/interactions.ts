@@ -72,17 +72,12 @@ Response options are [RESPOND], [IGNORE] and [STOP].
   * Conversation is active and engaging
 
 - IGNORE when:
-  * Message is not relevant to their expertise
   * Already responded recently without new information to add
-  * Conversation has moved to a different topic
-  * Message is too short or lacks substance
   * Other participants are handling the discussion well
 
 - STOP when:
   * Asked to stop participating
   * Conversation has concluded
-  * Discussion has completely diverged from their expertise
-  * Room topic has changed significantly
 
 Recent messages:
 {{recentMessages}}
