@@ -86,11 +86,11 @@ Thread Context:
 {{formattedConversation}}
 
 # Task: Choose whether {{agentName}} should respond to the last message.
-Consider:
-1. Message relevance to {{agentName}}'s expertise
-2. Current conversation context
-3. Time since last response
-4. Value of potential contribution
+// Consider:
+// 1. Message relevance to {{agentName}}'s expertise
+// 2. Current conversation context
+// 3. Time since last response
+// 4. Value of potential contribution
 ` + shouldRespondFooter
     );
 }
