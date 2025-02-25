@@ -26,6 +26,7 @@ import {
     CacheStore,
     Client,
     ICacheManager,
+    IMemoryManager,
     parseBooleanFromText,
 } from "@elizaos/core";
 import { RedisClient } from "@elizaos/adapter-redis";
@@ -70,6 +71,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import yargs from "yargs";
 import net from "net";
+import { PineconeKnowledgeManager } from "@elizaos/adapter-pinecone";
 
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
@@ -516,13 +518,12 @@ export async function createAgent(
         );
     }
 
-    return new AgentRuntime({
+    const runtime = new AgentRuntime({
         databaseAdapter: db,
         token,
         modelProvider: character.modelProvider,
         evaluators: [],
         character,
-        // character.plugins are handled when clients are added
         plugins: [
             bootstrapPlugin,
             getSecret(character, "CONFLUX_CORE_PRIVATE_KEY")
@@ -617,6 +618,21 @@ export async function createAgent(
         cacheManager: cache,
         fetch: logFetch,
     });
+
+    // Initialize Pinecone after runtime creation
+    const pineconeApiKey = getSecret(character, "PINECONE_API_KEY");
+    const pineconeIndex = getSecret(character, "PINECONE_INDEX");
+
+    if (pineconeApiKey && pineconeIndex) {
+        elizaLogger.info("Initializing Pinecone Knowledge Manager...");
+        runtime.knowledgeManager = new PineconeKnowledgeManager(
+            runtime,
+            pineconeApiKey,
+            pineconeIndex
+        );
+    }
+
+    return runtime;
 }
 
 function initializeFsCache(baseDir: string, character: Character) {
