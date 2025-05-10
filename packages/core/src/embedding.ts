@@ -160,6 +160,15 @@ export function getEmbeddingZeroVector(): number[] {
  */
 
 export async function embed(runtime: IAgentRuntime, input: string) {
+    const config = getEmbeddingConfig();
+    elizaLogger.info("Debug - Embedding configuration:", {
+        provider: config.provider,
+        model: config.model,
+        dimensions: config.dimensions,
+        useOpenAI: settings.USE_OPENAI_EMBEDDING,
+        modelProvider: runtime.character.modelProvider
+    });
+
     elizaLogger.debug("Embedding request:", {
         modelProvider: runtime.character.modelProvider,
         useOpenAI: process.env.USE_OPENAI_EMBEDDING,
@@ -184,7 +193,6 @@ export async function embed(runtime: IAgentRuntime, input: string) {
     const cachedEmbedding = await retrieveCachedEmbedding(runtime, input);
     if (cachedEmbedding) return cachedEmbedding;
 
-    const config = getEmbeddingConfig();
     const isNode = typeof process !== "undefined" && process.versions?.node;
 
     // Determine which embedding path to use

@@ -788,9 +788,25 @@ export class AgentRuntime implements IAgentRuntime {
         message: Memory,
         additionalKeys: { [key: string]: unknown } = {}
     ) {
+        elizaLogger.info("Debug - Starting context composition for message:", {
+            messageId: message.id,
+            hasKnowledgeManager: !!this.knowledgeManager,
+            knowledgeManagerType: this.knowledgeManager?.constructor.name
+        });
+
         const { userId, roomId } = message;
 
         const conversationLength = this.getConversationLength();
+
+        // Get knowledge first to debug if it's being retrieved
+        const knowledgeData = await knowledge.get(this, message);
+        elizaLogger.info("Debug - Retrieved knowledge data:", {
+            knowledgeCount: knowledgeData.length,
+            knowledge: knowledgeData.map(k => ({
+                id: k.id,
+                textPreview: k.content.text?.slice(0, 100) + '...'
+            }))
+        });
 
         const [actorsData, recentMessagesData, goalsData]: [
             Actor[],
@@ -1012,8 +1028,12 @@ Text: ${attachment.text}
         }
 
         const knowledegeData = await knowledge.get(this, message);
-
         const formattedKnowledge = formatKnowledge(knowledegeData);
+
+        elizaLogger.info("Debug - Formatted knowledge for state:", {
+            rawKnowledgeCount: knowledegeData.length,
+            formattedKnowledge: formattedKnowledge
+        });
 
         const initialState = {
             agentId: this.agentId,
@@ -1029,6 +1049,7 @@ Text: ${attachment.text}
                           )
                       ]
                     : "",
+            // Knowledge from the knowledge manager (pinecone)
             knowledge: formattedKnowledge,
             knowledgeData: knowledegeData,
             // Recent interactions between the sender and receiver, formatted as messages

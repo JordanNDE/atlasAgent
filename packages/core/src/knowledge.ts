@@ -4,11 +4,18 @@ import { KnowledgeItem, UUID, type Memory } from "./types.ts";
 import { stringToUuid } from "./uuid.ts";
 import { splitChunks } from "./generation.ts";
 import elizaLogger from "./logger.ts";
+// import { PineconeKnowledgeManager } from "@elizaos/adapter-pinecone";
 
 async function get(
     runtime: AgentRuntime,
     message: Memory
 ): Promise<KnowledgeItem[]> {
+    elizaLogger.info("Debug - Starting knowledge retrieval:", {
+        hasKnowledgeManager: !!runtime.knowledgeManager,
+        knowledgeManagerType: runtime.knowledgeManager?.constructor.name,
+        messageId: message.id
+    });
+
     // Add validation for message
     if (!message?.content?.text) {
         elizaLogger.warn("Invalid message for knowledge query:", {
@@ -20,7 +27,7 @@ async function get(
     }
 
     const processed = preprocess(message.content.text);
-    elizaLogger.debug("Knowledge query:", {
+    elizaLogger.info("Debug - Knowledge query:", {
         original: message.content.text,
         processed,
         length: processed?.length,
@@ -32,36 +39,102 @@ async function get(
         return [];
     }
 
-    const embedding = await embed(runtime, processed);
+    try {
+        elizaLogger.info("Debug - Creating embedding for knowledge query");
+        const embedding = await embed(runtime, processed);
+
+        elizaLogger.info("Debug - About to search memories with embedding:", {
+            embeddingLength: embedding.length,
+            knowledgeManagerType: runtime.knowledgeManager?.constructor.name,
+            managerMethods: Object.getOwnPropertyNames(Object.getPrototypeOf(runtime.knowledgeManager))
+        });
+
     const fragments = await runtime.knowledgeManager.searchMemoriesByEmbedding(
         embedding,
         {
             roomId: message.agentId,
             count: 5,
-            match_threshold: 0.1,
+            match_threshold: 0.8, //threshold for similarity search in vectorDB
         }
     );
+
+    elizaLogger.info("Debug - Found knowledge fragments:", {
+        fragmentCount: fragments.length,
+        fragments: fragments.map(f => ({
+            id: f.id,
+            text: f.content.text?.slice(0, 100) + '...',
+            similarity: f.similarity
+        }))
+    });
 
     const uniqueSources = [
         ...new Set(
             fragments.map((memory) => {
                 elizaLogger.log(
-                    `Matched fragment: ${memory.content.text} with similarity: ${memory.similarity}`
+                    `Matched fragment: Id: ${memory.id} -- ${memory.content.text} with similarity: ${memory.similarity}`
                 );
                 return memory.content.source;
             })
         ),
     ];
 
-    const knowledgeDocuments = await Promise.all(
-        uniqueSources.map((source) =>
-            runtime.documentsManager.getMemoryById(source as UUID)
-        )
-    );
+        // const knowledgeDocuments = await Promise.all(
+        //     uniqueSources.map((source) =>
+        //         runtime.documentsManager.getMemoryById(source as UUID)
+        //     )
+        // );
 
-    return knowledgeDocuments
-        .filter((memory) => memory !== null)
-        .map((memory) => ({ id: memory.id, content: memory.content }));
+        elizaLogger.info("Debug - Unique sources and their full documents:", {
+            uniqueSourcesCount: uniqueSources.length,
+            knowledgeDocuments: fragments.map(doc => ({
+                id: doc.id,
+                text: doc.content.text?.slice(0, 100) + '...'
+            }))
+        });
+
+        // Add logging to see what we're getting
+        elizaLogger.info("Debug - Knowledge documents before processing:", {
+            documentsCount: fragments.length,
+            documents: fragments.map(doc => doc ? {
+                hasId: !!doc.id,
+                hasContent: !!doc.content
+            } : 'null')
+        });
+
+        const result = fragments
+            .filter((memory): memory is NonNullable<typeof memory> => {
+                const isValid: boolean = memory !== null && !!memory.id && !!memory.content;
+                if (!isValid) {
+                    elizaLogger.warn("Found invalid memory item:", {
+                        isNull: memory === null,
+                        hasId: memory?.id ? true : false,
+                        hasContent: memory?.content ? true : false
+                    });
+                }
+                return isValid;
+            })
+            .map((memory) => ({ id: memory.id, content: memory.content }));
+
+        elizaLogger.info("Debug - Final knowledge items being returned:", {
+            count: result.length,
+            items: result.map(item => ({
+                id: item.id,
+                text: item.content.text?.slice(0, 100) + '...'
+            }))
+        });
+
+        return result;
+    } catch (error) {
+        elizaLogger.error("Error during knowledge retrieval:", {
+            error: error,
+            errorMessage: error.message,
+            errorStack: error.stack,
+            // Add runtime check
+            knowledgeManager: !!runtime.knowledgeManager,
+            processed: processed
+        });
+        return [];
+    }
 }
 
 async function set(
