@@ -799,7 +799,7 @@ export class AgentRuntime implements IAgentRuntime {
         const conversationLength = this.getConversationLength();
 
         // Get knowledge first to debug if it's being retrieved
-        const knowledgeData = await knowledge.get(this, message);
+        const knowledgeData = await knowledge.get(this, message); //this returns an array of knowledge items from pinecone vector db matched to the message
         elizaLogger.info("Debug - Retrieved knowledge data:", {
             knowledgeCount: knowledgeData.length,
             knowledge: knowledgeData.map(k => ({
@@ -807,6 +807,8 @@ export class AgentRuntime implements IAgentRuntime {
                 textPreview: k.content.text?.slice(0, 100) + '...'
             }))
         });
+
+        //SO EITHER HERE FOR RERANKING OR INSIDE THE KNOWLEDGE.TS ?
 
         const [actorsData, recentMessagesData, goalsData]: [
             Actor[],
@@ -889,12 +891,12 @@ export class AgentRuntime implements IAgentRuntime {
             .map(
                 (attachment) =>
                     `ID: ${attachment.id}
-Name: ${attachment.title}
-URL: ${attachment.url}
-Type: ${attachment.source}
-Description: ${attachment.description}
-Text: ${attachment.text}
-  `
+                    Name: ${attachment.title}
+                    URL: ${attachment.url}
+                    Type: ${attachment.source}
+                    Description: ${attachment.description}
+                    Text: ${attachment.text}
+                    `
             )
             .join("\n");
 
@@ -1318,6 +1320,28 @@ Text: ${attachment.text}
 
 const formatKnowledge = (knowledge: KnowledgeItem[]) => {
     return knowledge
-        .map((knowledge) => `- ${knowledge.content.text}`)
+        .map((item, index) => {
+            const title = item.content.title || '';
+            const source = item.content.source || item.content.title || `Source ${index + 1}`;
+            const url = item.content.url || '';
+            const category = item.content.category || '';
+            const date = item.content.date || '';
+
+            let formattedItem = `- ${item.content.text}`;
+
+            // Add metadata if available
+            const metadata = [];
+            if (title) metadata.push(`Title: ${title}`);
+            if (source) metadata.push(`Source: ${source}`);
+            if (category) metadata.push(`Category: ${category}`);
+            if (date) metadata.push(`Date: ${date}`);
+            if (url) metadata.push(`URL: ${url}`);
+
+            if (metadata.length > 0) {
+                formattedItem += `\n  [${metadata.join(' | ')}]`;
+            }
+
+            return formattedItem;
+        })
         .join("\n");
 };

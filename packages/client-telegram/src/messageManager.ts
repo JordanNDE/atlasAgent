@@ -135,12 +135,12 @@ Note that {{agentName}} is capable of reading/seeing/hearing various forms of me
 
 {{recentMessages}}
 
-# Task: Generate a post/reply in the voice, style and perspective of {{agentName}} (@{{twitterUserName}}) while using the thread of tweets as additional context:
-Current Post:
-{{currentPost}}
-Thread of Tweets You Are Replying To:
-
-{{formattedConversation}}
+# Instructions: Write the next message for {{agentName}}.
+# IMPORTANT: When you reference specific knowledge, always provide source citations at the end of your response in this format:
+#
+# Sources:
+# - [Source Name](URL) - Brief description of what this source contributed
+# - [Source Name](URL) - Brief description of what this source contributed
 ` + messageCompletionFooter;
 
 interface MessageContext {

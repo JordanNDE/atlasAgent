@@ -50,6 +50,7 @@ export const messageHandlerTemplate =
 (Action examples are for reference only. Do not use the information from them in your response.)
 
 # Knowledge
+Use the following knowledge to answer the user's question. Reference specific examples and cite the sources where appropriate
 {{knowledge}}
 
 # Task: Generate dialog and actions for the character {{agentName}}.

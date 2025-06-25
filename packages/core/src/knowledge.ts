@@ -52,10 +52,12 @@ async function get(
     const fragments = await runtime.knowledgeManager.searchMemoriesByEmbedding(
         embedding,
         {
+            match_threshold: 0.55, //threshold for similarity search in vectorDB
+            count: 10,
             roomId: message.agentId,
-            count: 5,
-            match_threshold: 0.8, //threshold for similarity search in vectorDB
-        }
+            text: processed,
+            originalText: message.content.text
+        } as any //to bypass type checking error
     );
 
     elizaLogger.info("Debug - Found knowledge fragments:", {
@@ -70,36 +72,14 @@ async function get(
     const uniqueSources = [
         ...new Set(
             fragments.map((memory) => {
-                elizaLogger.log(
-                    `Matched fragment: Id: ${memory.id} -- ${memory.content.text} with similarity: ${memory.similarity}`
-                );
+                // elizaLogger.log(
+                //     `Matched fragment: Id: ${memory.id} -- ${memory.content.text} with similarity: ${memory.similarity}`
+                // );
                 return memory.content.source;
             })
         ),
     ];
 
-        // const knowledgeDocuments = await Promise.all(
-        //     uniqueSources.map((source) =>
-        //         runtime.documentsManager.getMemoryById(source as UUID)
-        //     )
-        // );
-
-        elizaLogger.info("Debug - Unique sources and their full documents:", {
-            uniqueSourcesCount: uniqueSources.length,
-            knowledgeDocuments: fragments.map(doc => ({
-                id: doc.id,
-                text: doc.content.text?.slice(0, 100) + '...'
-            }))
-        });
-
-        // Add logging to see what we're getting
-        elizaLogger.info("Debug - Knowledge documents before processing:", {
-            documentsCount: fragments.length,
-            documents: fragments.map(doc => doc ? {
-                hasId: !!doc.id,
-                hasContent: !!doc.content
-            } : 'null')
-        });
 
         const result = fragments
             .filter((memory): memory is NonNullable<typeof memory> => {

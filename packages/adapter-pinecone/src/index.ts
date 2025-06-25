@@ -147,15 +147,12 @@ export class PineconeKnowledgeManager implements IMemoryManager {
 
             // Then try with filter
             const filtered = await index.query({
-                topK: params.count || 5,
+                topK: params.count || 10,
                 includeMetadata: true,
                 vector: embedding
-                // filter: {
-                //     agentId: this.runtime.agentId
-                // }
             });
 
-            elizaLogger.info("Pinecone - Filtered search results:", {
+            elizaLogger.info("Pinecone - Final Filtered search results:", {
                 matchCount: filtered?.matches?.length || 0,
                 matches: filtered?.matches?.map(m => ({
                     score: m.score,
@@ -165,8 +162,63 @@ export class PineconeKnowledgeManager implements IMemoryManager {
                 }))
             });
 
-            // Use the filtered results for actual processing
-            const results = filtered;
+            console.log("params.text", params.text);
+            // Add standalone reranking after the query
+            let results = filtered; // Initialize with filtered results
+
+            if (params.text && filtered?.matches?.length > 0) {
+                try {
+                    elizaLogger.info("Starting reranking with:", {
+                        text: params.text,
+                        matchCount: filtered.matches.length
+                    });
+
+                    const rerankResults = await this.client.inference.rerank(
+                        "bge-reranker-v2-m3",
+                        params.text,
+                        filtered.matches
+                            .filter(match => match.metadata?.text)
+                            .map(match => ({
+                                id: match.id,
+                                text: match.metadata!.text as string
+                            })),
+                            {
+                                topN: 5
+                            }
+                    );
+
+                    elizaLogger.info("Reranking successful:", {
+                        rerankCount: rerankResults.data?.length || 0,
+                        results: rerankResults.data?.map(r => ({ id: r.document!.id, score: r.score, text: r.document!.text, metadata: r.document!.metadata }))
+                    });
+
+                    // Update results with reranked data
+                    if (rerankResults.data && rerankResults.data.length > 0) {
+                        // Create a new results object with reranked matches
+                        results = {
+                            ...filtered,
+                            matches: rerankResults.data.map(rerankItem => {
+                                // Find the original match to preserve all metadata
+                                const originalMatch = filtered.matches.find(m => m.id === rerankItem.document!.id);
+                                if (!originalMatch) {
+                                    elizaLogger.warn("Could not find original match for reranked item:", rerankItem.document!.id);
+                                    return null;
+                                }
+                                return {
+                                    ...originalMatch,
+                                    score: rerankItem.score // Update with reranked score
+                                };
+                            }).filter((match): match is NonNullable<typeof match> => match !== null)
+                        };
+                    }
+                } catch (error) {
+                    elizaLogger.info("Reranking failed, using original results:", error);
+                }
+            }
+
+            elizaLogger.info("Pinecone - Results filtered after reranking:", {
+                results: results
+            });
 
             if (!results?.matches) {
                 throw new Error('Invalid response from Pinecone: missing matches array');
@@ -199,10 +251,10 @@ export class PineconeKnowledgeManager implements IMemoryManager {
                     .filter(Boolean)
             )];
 
-            elizaLogger.info("Pinecone - Found documents jojo:", {
-                documentCount: documentIds.length,
-                documentIds
-            });
+            // elizaLogger.info("Pinecone - Found documents jojo:", {
+            //     documentCount: documentIds.length,
+            //     documentIds
+            // });
 
             const memories = results.matches
                 .filter((match): match is NonNullable<typeof match> => {
@@ -219,12 +271,12 @@ export class PineconeKnowledgeManager implements IMemoryManager {
                                      match.id;
 
                     // Log the ID resolution process
-                    elizaLogger.info("Document ID resolution:", {
-                        sourceId: match.metadata?.sourceId,
-                        documentId: match.metadata?.document_id,
-                        matchId: match.id,
-                        finalDocumentId: documentId
-                    });
+                    // elizaLogger.info("Document ID resolution:", {
+                    //     sourceId: match.metadata?.sourceId,
+                    //     documentId: match.metadata?.document_id,
+                    //     matchId: match.id,
+                    //     finalDocumentId: documentId
+                    // });
 
                     // Convert to UUID or generate a deterministic UUID from the string
                     const id = stringToUuid(documentId);
@@ -247,21 +299,21 @@ export class PineconeKnowledgeManager implements IMemoryManager {
                     };
 
                     // Log the created memory object
-                    elizaLogger.info("Created memory object:", {
-                        id: memory.id,
-                        hasText: !!memory.content.text,
-                        textLength: memory.content.text.length,
-                        similarity: memory.similarity
-                    });
+                    // elizaLogger.info("Created memory object:", {
+                    //     id: memory.id,
+                    //     hasText: !!memory.content.text,
+                    //     textLength: memory.content.text.length,
+                    //     similarity: memory.similarity
+                    // });
 
                     return memory;
                 });
 
             // Log final memories array
-            elizaLogger.info("Returning memories array:", {
-                count: memories.length,
-                memoryIds: memories.map(m => m.id)
-            });
+            // elizaLogger.info("Returning memories array:", {
+            //     count: memories.length,
+            //     memoryIds: memories.map(m => m.id)
+            // });
 
             return memories;
         } catch (error: any) {

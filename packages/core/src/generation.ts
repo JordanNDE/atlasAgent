@@ -298,7 +298,9 @@ export async function generateText({
             `Trimming context to max length of ${max_context_length} tokens.`
         );
 
+        console.log("context before trimTokens and max_context_length", context.length, max_context_length);
         context = await trimTokens(context, max_context_length, runtime);
+        console.log("context after trimTokens", context.length);
 
         let response: string;
 
@@ -1093,12 +1095,15 @@ export async function generateMessageResponse({
     const provider = runtime.modelProvider;
     const max_context_length = models[provider].settings.maxInputTokens;
 
+    // console.log("context size before trimTokens and max_context_length", context.length, max_context_length);
     context = await trimTokens(context, max_context_length, runtime);
+    console.log("context after trimTokens", context);
+    // console.log("context size after trimTokens", context.length);
     let retryLength = 1000; // exponential backoff
     while (true) {
         try {
             elizaLogger.log("Generating message response..");
-
+            console.log("model class is: ", modelClass);
             const response = await generateText({
                 runtime,
                 context,
