@@ -305,7 +305,7 @@ export async function generateText({
         let response: string;
 
         const _stop = stop || models[provider].settings.stop;
-        elizaLogger.debug(
+        console.log(
             `Using provider: ${provider}, model: ${model}, temperature: ${temperature}, max response length: ${max_response_length}`
         );
 
@@ -1109,6 +1109,8 @@ export async function generateMessageResponse({
                 context,
                 modelClass,
             });
+
+            console.log("jojo - response json is: ", response);
 
             // try parsing the response as JSON, if null then try again
             const parsedContent = parseJSONObjectFromText(response) as Content;

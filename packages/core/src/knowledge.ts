@@ -53,7 +53,7 @@ async function get(
         embedding,
         {
             match_threshold: 0.55, //threshold for similarity search in vectorDB
-            count: 10,
+            count: 15,
             roomId: message.agentId,
             text: processed,
             originalText: message.content.text

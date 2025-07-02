@@ -1030,6 +1030,7 @@ export class AgentRuntime implements IAgentRuntime {
         }
 
         const knowledegeData = await knowledge.get(this, message);
+        console.log("jojo - knowledegeData is: ", knowledegeData);
         const formattedKnowledge = formatKnowledge(knowledegeData);
 
         elizaLogger.info("Debug - Formatted knowledge for state:", {
@@ -1322,7 +1323,6 @@ const formatKnowledge = (knowledge: KnowledgeItem[]) => {
     return knowledge
         .map((item, index) => {
             const title = item.content.title || '';
-            const source = item.content.source || item.content.title || `Source ${index + 1}`;
             const url = item.content.url || '';
             const category = item.content.category || '';
             const date = item.content.date || '';
@@ -1332,7 +1332,6 @@ const formatKnowledge = (knowledge: KnowledgeItem[]) => {
             // Add metadata if available
             const metadata = [];
             if (title) metadata.push(`Title: ${title}`);
-            if (source) metadata.push(`Source: ${source}`);
             if (category) metadata.push(`Category: ${category}`);
             if (date) metadata.push(`Date: ${date}`);
             if (url) metadata.push(`URL: ${url}`);

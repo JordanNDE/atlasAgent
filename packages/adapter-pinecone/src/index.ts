@@ -183,7 +183,7 @@ export class PineconeKnowledgeManager implements IMemoryManager {
                                 text: match.metadata!.text as string
                             })),
                             {
-                                topN: 5
+                                topN: 7
                             }
                     );
 
@@ -288,7 +288,8 @@ export class PineconeKnowledgeManager implements IMemoryManager {
                             title: String(match.metadata?.document_title || ''),
                             source: String(match.metadata?.source || ''),
                             category: String(match.metadata?.category || ''),
-                            date: String(match.metadata?.date || '')
+                            date: String(match.metadata?.date || ''),
+                            url: String(match.metadata?.url || '')
                         },
                         embedding: undefined,
                         agentId: this.runtime.agentId,
