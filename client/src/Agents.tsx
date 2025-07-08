@@ -18,7 +18,7 @@ function Agents() {
                     {agents?.map((agent) => (
                         <Button
                             key={agent.id}
-                            className="w-full text-lg py-6"
+                            className="w-full text-lg py-6 my-custom-btn"
                             onClick={() => {
                                 navigate(`/${agent.id}`);
                             }}

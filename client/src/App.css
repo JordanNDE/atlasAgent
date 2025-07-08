@@ -39,3 +39,11 @@
 .read-the-docs {
     color: #888;
 }
+
+.my-custom-btn {
+  background-color: #00ff38;
+  color: white;
+}
+.my-custom-btn:hover {
+  background-color:rgba(13, 141, 41, 0.82);
+}

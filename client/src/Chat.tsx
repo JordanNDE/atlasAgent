@@ -249,7 +249,7 @@ export default function Chat() {
                         >
                             <ImageIcon className="h-4 w-4" />
                         </Button>
-                        <Button type="submit" disabled={isPending}>
+                        <Button type="submit" disabled={isPending} className="my-custom-btn">
                             {isPending ? "..." : "Send"}
                         </Button>
                     </form>

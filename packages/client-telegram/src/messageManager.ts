@@ -111,36 +111,33 @@ const telegramMessageHandlerTemplate =
 {{actionExamples}}
 (Action examples are for reference only. Do not use the information from them in your response.)
 
-# Knowledge
-{{knowledge}}
-
 # Task: Generate dialog and actions for the character {{agentName}}.
 About {{agentName}}:
 {{bio}}
 {{lore}}
 
-Examples of {{agentName}}'s dialog and actions:
-{{characterMessageExamples}}
-
 {{providers}}
 
 {{attachments}}
 
-{{actions}}
-
 # Capabilities
 Note that {{agentName}} is capable of reading/seeing/hearing various forms of media, including images, videos, audio, plaintext and PDFs. Recent attachments have been included above under the "Attachments" section.
+
+# Knowledge
+Use the following knowledge to answer the user's question. When you use information from a knowledge chunk, cite it in the References section using the Title and URL from the metadata in brackets at the end of that chunk.
+(For example:
+References:
+1. Title: Exploring Blockchain Technology for Government Transparency: Blockchain-Based Public Procurement to Reduce Corruption. 2020. URL: https://www3.weforum.org/docs/WEF_Blockchain_Government_Transparency_Report_Supplementary%20Research.pdf)
+
+{{knowledge}}
 
 {{messageDirections}}
 
 {{recentMessages}}
 
+{{actions}}
+
 # Instructions: Write the next message for {{agentName}}.
-# IMPORTANT: When you reference specific knowledge, always provide source citations at the end of your response in this format:
-#
-# Sources:
-# - [Source Name](URL) - Brief description of what this source contributed
-# - [Source Name](URL) - Brief description of what this source contributed
 ` + messageCompletionFooter;
 
 interface MessageContext {
