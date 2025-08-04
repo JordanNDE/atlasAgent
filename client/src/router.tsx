@@ -5,6 +5,7 @@ import Agent from "./Agent"; // We'll create this component
 import Layout from "./Layout";
 import Chat from "./Chat";
 import Character from "./Character";
+import Docs from "./Docs";
 
 export const router = createBrowserRouter([
     {
@@ -27,6 +28,10 @@ export const router = createBrowserRouter([
                 path: "character", // This matches /:agentId/chat
                 element: <Character />,
             },
+            {
+                path: "docs", // This matches /:agentId/docs
+                element: <Docs />,
+            }
         ],
     },
 ]);

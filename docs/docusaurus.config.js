@@ -148,9 +148,9 @@ const config = {
       },
     },
     navbar: {
-      title: "eliza",
+      title: "DCL/:Atlas",
       logo: {
-        alt: "Eliza Logo",
+        alt: "DCL/:Atlas",
         src: "img/favicon.ico",
       },
       items: [

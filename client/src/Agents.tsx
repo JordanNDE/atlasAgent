@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useGetAgentsQuery } from "@/api";
+import { BookOpen } from "lucide-react";
 import "./App.css";
 
 function Agents() {
@@ -8,7 +9,16 @@ function Agents() {
     const { data: agents, isLoading } = useGetAgentsQuery()
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center p-4">
+        <div className="min-h-screen flex flex-col items-center justify-center p-4 relative">
+            <div style={{ position: "absolute", top: 24, right: 32 }}>
+                <button
+                    onClick={() => navigate("/docs")}
+                    style={{ display: "flex", alignItems: "center", gap: 8, color: "#00ff38", background: "none", border: "none", cursor: "pointer", fontWeight: 600, fontSize: 18 }}
+                >
+                    <BookOpen size={22} style={{ color: "#00ff38" }} />
+                    Documentation
+                </button>
+            </div>
             <h1 className="text-2xl font-bold mb-8">Select your agent:</h1>
 
             {isLoading ? (
@@ -20,7 +30,7 @@ function Agents() {
                             key={agent.id}
                             className="w-full text-lg py-6 my-custom-btn"
                             onClick={() => {
-                                navigate(`/${agent.id}`);
+                                navigate(`/${agent.id}/chat`);
                             }}
                         >
                             {agent.name}

@@ -1,4 +1,4 @@
-import { Calendar, Inbox } from "lucide-react";
+import { BookOpen, Calendar, Inbox } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -26,6 +26,11 @@ const items = [
         url: "character",
         icon: Calendar,
     },
+    {
+        title: "Documentation",
+        url: "docs",
+        icon: BookOpen,
+    }
 ];
 
 export function AppSidebar() {

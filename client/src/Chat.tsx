@@ -130,6 +130,20 @@ function fixMarkdown(md: string): string {
     return fixed;
 }
 
+// Prompt suggestions array
+const PROMPT_SUGGESTIONS = [
+    "How can blockchain technology support the achievement of the UN Sustainable Development Goals (SDGs)?",
+    "What are some real-world examples of blockchain improving transparency in humanitarian aid?",
+    "How could decentralized systems empower local communities in sustainable development projects?",
+    "What are the main challenges and opportunities for using blockchain in regenerative economics?",
+    // Add more prompts here if desired
+];
+
+function getRandomPrompts(arr: string[], n: number) {
+    const shuffled = arr.slice().sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, n);
+}
+
 export default function Chat() {
     const { agentId } = useParams();
     const [input, setInput] = useState("");
@@ -191,7 +205,7 @@ export default function Chat() {
                                 <article
                                     className={`max-w-[80%] rounded-lg px-4 py-2 break-words ${
                                         message.user === "user"
-                                            ? "bg-primary text-primary-foreground"
+                                            ? "bg-[#00ff38] text-black"
                                             : "bg-muted"
                                     }`}
                                 >
@@ -215,8 +229,22 @@ export default function Chat() {
                             </div>
                         ))
                     ) : (
-                        <div className="text-center text-muted-foreground">
-                            No messages yet. Start a conversation!
+                        <div className="flex flex-col items-center justify-center gap-4 py-8">
+                            <div className="text-center text-muted-foreground mb-2">
+                                Not sure where to start? Try one of these prompts:
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl">
+                                {getRandomPrompts(PROMPT_SUGGESTIONS, 4).map((prompt, idx) => (
+                                    <button
+                                        key={idx}
+                                        type="button"
+                                        className="bg-gray-100 text-black rounded-lg p-4 shadow-sm border border-gray-200 hover:border-[#00ff38] hover:shadow-md transition cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-[#00ff38]"
+                                        onClick={() => setInput(prompt)}
+                                    >
+                                        {prompt}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     )}
                     <div ref={messagesEndRef} />
