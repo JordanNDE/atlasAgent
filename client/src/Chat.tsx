@@ -153,6 +153,9 @@ export default function Chat() {
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const { mutate: sendMessage, isPending } = useSendMessageMutation({ setMessages, setSelectedFile });
 
+    // Add state for prompt suggestions
+    const [promptSuggestions] = useState(() => getRandomPrompts(PROMPT_SUGGESTIONS, 4));
+
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
@@ -234,7 +237,7 @@ export default function Chat() {
                                 Not sure where to start? Try one of these prompts:
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl">
-                                {getRandomPrompts(PROMPT_SUGGESTIONS, 4).map((prompt, idx) => (
+                                {promptSuggestions.map((prompt, idx) => (
                                     <button
                                         key={idx}
                                         type="button"
@@ -253,6 +256,10 @@ export default function Chat() {
 
             <div className="border-t p-4 bg-background">
                 <div className="max-w-3xl mx-auto">
+                    {/* Loading bar shown when processing a request */}
+                    {isPending && (
+                        <div className="w-full h-1 bg-gradient-to-r from-[#00ff38] to-[#00bfff] animate-pulse mb-2 rounded" />
+                    )}
                     <form onSubmit={handleSubmit} className="flex gap-2">
                         <input
                             type="file"

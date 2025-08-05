@@ -19,7 +19,7 @@ function Agents() {
                     Documentation
                 </button>
             </div>
-            <h1 className="text-2xl font-bold mb-8">Select your agent:</h1>
+            <h1 className="text-2xl font-bold mb-8">Select an agent:</h1>
 
             {isLoading ? (
                 <div>Loading agents...</div>
